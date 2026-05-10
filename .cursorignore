@@ -1,0 +1,32 @@
+﻿# --- Requested ---
+.venv/
+__pycache__/
+data/
+*.csv
+*.db
+logs/
+
+# --- Python / tool caches ---
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# --- Build artifacts ---
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# --- Large / local outputs ---
+*.sqlite
+*.sqlite3
+*.log
+.env
+.btc_alert_cache.json

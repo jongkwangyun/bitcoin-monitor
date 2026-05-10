@@ -1,0 +1,16 @@
+# Render Blueprint 예시: Background Worker 로 텔레그램 봇 실행
+# 대시보드는 별도 Web Service 로 streamlit 명령을 연결하세요 (DEPLOY.md 참고).
+
+services:
+  - type: worker
+    name: btc-telegram-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: ALLOWED_CHAT_IDS
+        sync: false
+      - key: UPBIT_MARKET
+        value: KRW-BTC
