@@ -2,6 +2,7 @@ import json
 import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from btc_monitor.report import format_my_position
 
 def load_report_state(path: str) -> dict:
     if not os.path.isfile(path):
@@ -37,7 +38,11 @@ def format_regular_report(s, p120_txt: str, p200_txt: str) -> str:
     if s.krw_per_usdt:
         usd = s.live_price_krw / s.krw_per_usdt
         krw_txt = f"${usd:,.2f} ({krw_txt})"
-    lines.append(f"• 현재가: <b>{krw_txt}</b>")
+    lines.append(f"• 현재가: <b>{krw_txt}</b>\n")
+    
+    pos_str = format_my_position(s.live_price_krw)
+    if pos_str:
+        lines.append(pos_str)
     
     def ma_txt(val):
         if val is None: return "N/A"

@@ -20,3 +20,6 @@ def csv_path() -> Path:
 
 DEFAULT_MARKET = "KRW-BTC"
 CANDLE_COUNT = 200
+
+MY_BTC_BUY_PRICE = float(os.environ.get("MY_BTC_BUY_PRICE", "113115239.0"))
+MY_BTC_AMOUNT = float(os.environ.get("MY_BTC_AMOUNT", "0.13557626"))

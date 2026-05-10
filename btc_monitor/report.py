@@ -2,6 +2,7 @@ from html import escape
 from typing import List, Optional
 
 from .snapshot import CrossEvent, MarketSnapshot, compare_price_to_ma, cross_status_text, pct_vs_ma
+from .config import MY_BTC_BUY_PRICE, MY_BTC_AMOUNT
 
 
 def format_price_usd_krw(krw: float, krw_per_usdt: Optional[float]) -> str:
@@ -25,6 +26,33 @@ def format_ma_line_usd_krw(
     return f"{price_txt} — 현재가 <b>{pos}</b> ({pct})"
 
 
+def format_my_position(live_price: float) -> str:
+    if MY_BTC_BUY_PRICE <= 0 or MY_BTC_AMOUNT <= 0:
+        return ""
+        
+    current_value = live_price * MY_BTC_AMOUNT
+    buy_value = MY_BTC_BUY_PRICE * MY_BTC_AMOUNT
+    profit_amount = current_value - buy_value
+    profit_pct = (live_price / MY_BTC_BUY_PRICE - 1.0) * 100.0
+    
+    sign = "+" if profit_amount > 0 else ""
+    if profit_amount > 0:
+        color_emoji = "🟢"
+    elif profit_amount < 0:
+        color_emoji = "🔴"
+    else:
+        color_emoji = "⚪"
+        
+    lines = [
+        "<b>💼 내 포지션 (KRW-BTC)</b>",
+        f"• 평단가: ₩{MY_BTC_BUY_PRICE:,.0f} | 수량: {MY_BTC_AMOUNT:.8f} BTC",
+        f"• 평가손익: {color_emoji} <b>{sign}{profit_amount:,.0f}원 ({sign}{profit_pct:.2f}%)</b>",
+        f"• 평가금액: ₩{current_value:,.0f}",
+        ""
+    ]
+    return "\n".join(lines)
+
+
 def format_snapshot_html(s: MarketSnapshot, fetched_at: Optional[str] = None) -> str:
     lines: List[str] = []
     lines.append(f"<b>[BTC] {escape(s.market)}</b>")
@@ -33,6 +61,11 @@ def format_snapshot_html(s: MarketSnapshot, fetched_at: Optional[str] = None) ->
         lines.append(f"조회 시각: <b>{escape(fetched_at)}</b>")
     lines.append(f"일봉 기준일: {escape(str(s.candle_date_label))}")
     lines.append("")
+    
+    pos_str = format_my_position(s.live_price_krw)
+    if pos_str:
+        lines.append(pos_str)
+        
     lines.append("<b>이동평균 (실시간가 대비)</b>")
     for name, col in [
         ("5일", s.ma5),
