@@ -1,15 +1,14 @@
-# 30분마다 실행
-# 필요 시 Secrets: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+# GitHub Actions 비활성화 - 로컬 run_local_monitor.bat 으로 대체
+# 재활성화하려면 아래 'if: false' 를 제거하세요
 
 name: Bitcoin monitor (Upbit + Telegram)
 
 on:
-  schedule:
-    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 jobs:
   monitor:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

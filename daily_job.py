@@ -23,7 +23,7 @@ from btc_monitor.ma_chart import render_ma_chart_png
 from btc_monitor.report import format_snapshot_html
 from btc_monitor.snapshot import build_snapshot_full
 from btc_monitor.notifier import send_telegram_html, send_telegram_photo
-from btc_monitor.signal_manager import load_alert_cache, save_alert_cache, check_ma_cross, get_positions
+from btc_monitor.signal_manager import load_alert_cache, save_alert_cache, check_ma_cross
 from btc_monitor.report_manager import should_send_regular_report, format_regular_report
 
 def monitor_cross_signal(s, df_live, market, token, chat_id, cache_path):
@@ -62,10 +62,10 @@ def monitor_cross_signal(s, df_live, market, token, chat_id, cache_path):
             chat_id=chat_id,
         )
 
-def maybe_send_regular_report(s, df_live, market, token, chat_id, report_state_path, p120_txt, p200_txt):
+def maybe_send_regular_report(s, df_live, market, token, chat_id, report_state_path):
     if should_send_regular_report(report_state_path):
         logger.info("Sending regular scheduled report.")
-        msg = format_regular_report(s, p120_txt, p200_txt)
+        msg = format_regular_report(s)
         send_telegram_html(msg, token=token, chat_id=chat_id)
         
         chart_png = render_ma_chart_png(df_live, market)
@@ -102,8 +102,7 @@ def main() -> int:
     monitor_cross_signal(s, df_live, market, token, chat_id, cache_path)
     
     # 2. 정기 리포트 전송 여부 확인
-    p120_txt, p200_txt = get_positions(cache_path, live_price, ma120, ma200)
-    maybe_send_regular_report(s, df_live, market, token, chat_id, report_state_path, p120_txt, p200_txt)
+    maybe_send_regular_report(s, df_live, market, token, chat_id, report_state_path)
 
     # 3. 스냅샷 저장
     save_snapshot(s)
