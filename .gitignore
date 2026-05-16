@@ -1,4 +1,5 @@
 .env
+LOCAL_NOTES.md
 .btc_alert_cache.json
 .btc_report_state.json
 .venv/

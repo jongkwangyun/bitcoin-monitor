@@ -36,7 +36,7 @@ info "프로젝트 경로: $PROJECT_DIR"
 info "실행 유저: $REAL_USER"
 
 # ── 1. apt 패키지 설치 ─────────────────────────────────────
-info "[1/5] 시스템 패키지 설치…"
+info "[1/6] 시스템 패키지 설치…"
 apt-get update -qq
 apt-get install -y -qq \
     python3 \
@@ -50,7 +50,7 @@ apt-get install -y -qq \
     > /dev/null
 
 # ── 2. 로케일 / 타임존 ────────────────────────────────────
-info "[2/5] 로케일 & 타임존 설정…"
+info "[2/6] 로케일 & 타임존 설정…"
 locale-gen ko_KR.UTF-8 > /dev/null 2>&1 || true
 update-locale LANG=ko_KR.UTF-8 > /dev/null 2>&1 || true
 
@@ -60,8 +60,22 @@ if [[ "$CURRENT_TZ" != "Asia/Seoul" ]]; then
     timedatectl set-timezone Asia/Seoul
 fi
 
+info "[3/6] 절전/대기 모드 비활성화…"
+systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target > /dev/null 2>&1 || true
+
+mkdir -p /etc/systemd/logind.conf.d
+cat > /etc/systemd/logind.conf.d/99-btc-monitor-no-sleep.conf <<'EOF'
+[Login]
+IdleAction=ignore
+HandleLidSwitch=ignore
+HandleLidSwitchExternalPower=ignore
+HandleLidSwitchDocked=ignore
+EOF
+
+systemctl restart systemd-logind.service > /dev/null 2>&1 || warn "systemd-logind 재시작 실패 — 재부팅 후 절전 방지 설정이 적용됩니다."
+
 # ── 3. Python venv 생성 ───────────────────────────────────
-info "[3/5] Python 가상환경 생성…"
+info "[4/6] Python 가상환경 생성…"
 VENV_DIR="$PROJECT_DIR/venv"
 
 if [[ -d "$VENV_DIR" ]]; then
@@ -77,13 +91,13 @@ PYTHON_VER="$("$VENV_DIR/bin/python3" --version 2>&1)"
 info "Python 버전: $PYTHON_VER"
 
 # ── 4. 디렉터리 & 권한 ────────────────────────────────────
-info "[4/5] 디렉터리 생성 & 권한 설정…"
+info "[5/6] 디렉터리 생성 & 권한 설정…"
 mkdir -p "$PROJECT_DIR/data" "$PROJECT_DIR/logs"
 chown -R "$REAL_USER:$REAL_GROUP" "$PROJECT_DIR/data" "$PROJECT_DIR/logs"
 chmod +x "$PROJECT_DIR/run.sh" "$PROJECT_DIR/run_bot.sh"
 
 # ── 5. systemd 서비스 설치 ─────────────────────────────────
-info "[5/5] systemd 서비스 설치…"
+info "[6/6] systemd 서비스 설치…"
 
 # btc-monitor.service 에 경로/유저 치환
 for svc in btc-monitor.service btc-bot.service; do

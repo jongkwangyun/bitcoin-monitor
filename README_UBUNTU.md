@@ -35,6 +35,7 @@ git clone https://github.com/your-repo/bitcoin-monitor.git
 cd bitcoin-monitor
 
 # 2. 설치 (apt + venv + systemd 한 번에)
+# 절전/대기 모드 비활성화 설정도 함께 적용됩니다.
 sudo ./install.sh
 
 # 3. 환경변수 설정
@@ -67,7 +68,38 @@ sudo update-locale LANG=ko_KR.UTF-8
 sudo timedatectl set-timezone Asia/Seoul
 ```
 
-### 3. Python 가상환경
+### 3. 절전/대기 모드 비활성화
+
+미니PC를 24시간 모니터링 서버로 사용할 경우 장기 대기 중 suspend/sleep/hibernate로 들어가지 않도록 설정합니다.
+
+```bash
+# sleep/suspend/hibernate 계열 systemd target 차단
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+
+# logind idle/lid 정책 비활성화
+sudo mkdir -p /etc/systemd/logind.conf.d
+sudo tee /etc/systemd/logind.conf.d/99-btc-monitor-no-sleep.conf > /dev/null <<'EOF'
+[Login]
+IdleAction=ignore
+HandleLidSwitch=ignore
+HandleLidSwitchExternalPower=ignore
+HandleLidSwitchDocked=ignore
+EOF
+
+# 즉시 적용
+sudo systemctl restart systemd-logind.service
+```
+
+설정 확인:
+
+```bash
+systemctl status sleep.target suspend.target hibernate.target hybrid-sleep.target
+cat /etc/systemd/logind.conf.d/99-btc-monitor-no-sleep.conf
+```
+
+`sleep.target`, `suspend.target`, `hibernate.target`, `hybrid-sleep.target`가 `masked`로 보이면 정상입니다.
+
+### 4. Python 가상환경
 
 ```bash
 cd /path/to/bitcoin-monitor
@@ -76,7 +108,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. 환경변수
+### 5. 환경변수
 
 ```bash
 cp .env.example .env
@@ -89,7 +121,7 @@ TELEGRAM_BOT_TOKEN=your_bot_token_here
 TELEGRAM_CHAT_ID=your_chat_id_here
 ```
 
-### 5. 테스트 실행
+### 6. 테스트 실행
 
 ```bash
 source venv/bin/activate
@@ -97,7 +129,7 @@ python daily_job.py     # 단발성 스냅샷 + Telegram 전송 테스트
 python bot.py           # Telegram 봇 테스트 (Ctrl+C로 종료)
 ```
 
-### 6. systemd 서비스 등록
+### 7. systemd 서비스 등록
 
 ```bash
 # 서비스 파일의 경로/유저 치환 후 복사
@@ -276,6 +308,7 @@ docker run -d \
 |------|------|
 | 프로세스 크래시 | systemd `Restart=always` (10초 후 재시작) |
 | 서버 재부팅 | systemd `enable` → 부팅 시 자동 시작 |
+| 장기 대기 절전 방지 | `sleep/suspend/hibernate/hybrid-sleep.target` mask + `logind` idle/lid 무시 |
 | API 일시 장애 | `urllib3.Retry` 자동 재시도 (3회, 지수 백오프) |
 | Telegram 전송 실패 | 3회 재시도 (2s→4s→8s) |
 | 메모리 누수 | `gc.collect()` 주기 호출 + systemd `MemoryMax` |
