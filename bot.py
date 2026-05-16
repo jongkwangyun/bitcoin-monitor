@@ -1,5 +1,5 @@
 """
-텔레그램 봇 (업비트 BTC 조회). Render 등에서 24시간 폴링 실행.
+텔레그램 봇 (업비트 BTC 조회). systemd 서비스로 24시간 폴링 실행.
 
 환경변수: TELEGRAM_BOT_TOKEN (필수)
 선택: ALLOWED_CHAT_IDS — 쉼표로 구분해 허용 채팅만 처리 (비우면 전체 허용)
@@ -8,8 +8,10 @@
 import io
 import logging
 import os
+import sys
 from datetime import datetime
 from html import escape
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -24,10 +26,24 @@ from btc_monitor.ma_chart import render_ma_chart_png
 from btc_monitor.report import format_snapshot_html
 from btc_monitor.snapshot import build_snapshot_full
 
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s %(name)s %(message)s",
-    level=logging.INFO,
+# ── 로깅 설정 ──────────────────────────────────────────────
+_LOG_DIR = _ROOT / "logs"
+_LOG_DIR.mkdir(exist_ok=True)
+
+_fmt = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
+
+_sh = logging.StreamHandler(sys.stdout)
+_sh.setFormatter(_fmt)
+
+_fh = RotatingFileHandler(
+    _LOG_DIR / "bot.log",
+    maxBytes=10 * 1024 * 1024,
+    backupCount=5,
+    encoding="utf-8",
 )
+_fh.setFormatter(_fmt)
+
+logging.basicConfig(level=logging.INFO, handlers=[_sh, _fh])
 LOG = logging.getLogger("btc_bot")
 
 

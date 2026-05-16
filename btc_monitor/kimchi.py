@@ -1,8 +1,9 @@
 from typing import Optional
 
-import requests
-
+from .http_session import get_session
 from .upbit_client import fetch_ticker
+
+_session = get_session()
 
 
 def kimchi_premium_pct() -> Optional[float]:
@@ -14,7 +15,7 @@ def kimchi_premium_pct() -> Optional[float]:
         by_market = {x["market"]: x for x in up}
         krw_btc = float(by_market["KRW-BTC"]["trade_price"])
         krw_usdt = float(by_market["KRW-USDT"]["trade_price"])
-        r = requests.get(
+        r = _session.get(
             "https://api.binance.com/api/v3/ticker/price",
             params={"symbol": "BTCUSDT"},
             timeout=20,
@@ -25,5 +26,5 @@ def kimchi_premium_pct() -> Optional[float]:
         if implied_krw <= 0:
             return None
         return (krw_btc / implied_krw - 1.0) * 100.0
-    except (requests.RequestException, KeyError, ValueError, TypeError):
+    except (KeyError, ValueError, TypeError, OSError):
         return None

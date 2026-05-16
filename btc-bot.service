@@ -1,0 +1,41 @@
+# btc-bot.service — Telegram 봇 24시간 polling
+# install.sh 가 __PROJECT_DIR__, __USER__, __GROUP__ 을 치환합니다.
+
+[Unit]
+Description=BTC Telegram Bot — /btc 명령어 응답
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__USER__
+Group=__GROUP__
+WorkingDirectory=__PROJECT_DIR__
+ExecStart=__PROJECT_DIR__/run_bot.sh
+Restart=always
+RestartSec=10
+
+# 환경
+Environment=LANG=ko_KR.UTF-8
+Environment=LC_ALL=ko_KR.UTF-8
+Environment=TZ=Asia/Seoul
+Environment=PYTHONUNBUFFERED=1
+
+# 리소스 제한
+MemoryMax=256M
+MemoryHigh=192M
+
+# 보안 강화
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=__PROJECT_DIR__/data __PROJECT_DIR__/logs __PROJECT_DIR__
+PrivateTmp=true
+
+# 로깅
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=btc-bot
+
+[Install]
+WantedBy=multi-user.target

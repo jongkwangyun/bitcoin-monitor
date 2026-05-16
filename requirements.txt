@@ -1,9 +1,9 @@
-# Python 3.10+; 로컬은 setup_venv.bat 가 3.14 기준. Check: python --version
-# Older envs may lack pandas 2.x wheels; 1.x range allowed.
+# Python 3.14+; Ubuntu 26.04 Server / headless 환경
+# streamlit 은 서버에서 불필요 — 필요 시 별도 pip install streamlit
 pandas>=1.1.5,<3
 requests>=2.25.0
 python-dotenv>=0.19.0
 python-telegram-bot>=20.0
-streamlit>=1.28.0
 matplotlib>=3.5.0
 tzdata>=2023.3
+urllib3>=2.0.0

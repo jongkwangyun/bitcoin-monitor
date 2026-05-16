@@ -1,16 +1,18 @@
 from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
-import requests
 
 from .config import CANDLE_COUNT, DEFAULT_MARKET
+from .http_session import get_session
 
 UPBIT_DAYS_URL = "https://api.upbit.com/v1/candles/days"
 UPBIT_TICKER_URL = "https://api.upbit.com/v1/ticker"
 
+_session = get_session()
+
 
 def fetch_daily_candles(market: str = DEFAULT_MARKET, count: int = CANDLE_COUNT) -> pd.DataFrame:
-    r = requests.get(UPBIT_DAYS_URL, params={"market": market, "count": count}, timeout=30)
+    r = _session.get(UPBIT_DAYS_URL, params={"market": market, "count": count}, timeout=30)
     r.raise_for_status()
     rows = r.json()
     if not rows:
@@ -29,7 +31,7 @@ def fetch_daily_candles(market: str = DEFAULT_MARKET, count: int = CANDLE_COUNT)
 def fetch_ticker(markets: Union[str, List[str]]) -> List[Dict[str, Any]]:
     if isinstance(markets, list):
         markets = ",".join(markets)
-    r = requests.get(UPBIT_TICKER_URL, params={"markets": markets}, timeout=30)
+    r = _session.get(UPBIT_TICKER_URL, params={"markets": markets}, timeout=30)
     r.raise_for_status()
     data = r.json()
     if not data:
@@ -43,7 +45,7 @@ def fetch_krw_per_usdt() -> Optional[float]:
         tick = fetch_ticker("KRW-USDT")[0]
         v = float(tick["trade_price"])
         return v if v > 0 else None
-    except (requests.RequestException, KeyError, ValueError, TypeError, IndexError):
+    except (KeyError, ValueError, TypeError, IndexError, RuntimeError):
         return None
 
 

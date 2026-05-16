@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-import requests
+from .http_session import get_session
+
+_session = get_session()
 
 
 @dataclass
@@ -13,7 +15,7 @@ class FearGreedResult:
 def fetch_fear_greed_index() -> FearGreedResult:
     """Alternative.me Fear & Greed Index."""
     try:
-        r = requests.get("https://api.alternative.me/fng/", params={"limit": 1}, timeout=20)
+        r = _session.get("https://api.alternative.me/fng/", params={"limit": 1}, timeout=20)
         r.raise_for_status()
         data = r.json().get("data") or []
         if not data:
@@ -23,7 +25,7 @@ def fetch_fear_greed_index() -> FearGreedResult:
             value=int(row["value"]),
             classification=str(row.get("value_classification", "")),
         )
-    except (requests.RequestException, KeyError, ValueError):
+    except (KeyError, ValueError, OSError):
         return FearGreedResult(value=None, classification="조회 실패")
 
 
@@ -37,7 +39,7 @@ class GlobalMarketResult:
 def fetch_coingecko_global() -> GlobalMarketResult:
     """글로벌 시총 및 BTC 도미넌스."""
     try:
-        r = requests.get("https://api.coingecko.com/api/v3/global", timeout=20)
+        r = _session.get("https://api.coingecko.com/api/v3/global", timeout=20)
         r.raise_for_status()
         g = r.json().get("data") or {}
         dom = g.get("market_cap_percentage") or {}
@@ -48,7 +50,7 @@ def fetch_coingecko_global() -> GlobalMarketResult:
             market_cap_change_24h_pct=float(ch) if ch is not None else None,
             raw=g,
         )
-    except (requests.RequestException, TypeError, ValueError):
+    except (TypeError, ValueError, OSError):
         return GlobalMarketResult(btc_dominance_pct=None, market_cap_change_24h_pct=None, raw={})
 
 
