@@ -19,7 +19,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import traceback
 
-from daily_job import main as daily_job_main
+from btc_monitor.monitor import main as daily_job_main
 
 _ROOT = Path(__file__).resolve().parent
 _LOG_DIR = _ROOT / "logs"

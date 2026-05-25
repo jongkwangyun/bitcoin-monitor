@@ -1,6 +1,6 @@
-"""예약 작업 엔트리포인트 — `daily_job` 과 동일."""
+"""Compatibility entrypoint for the BTC monitor package."""
 
-from daily_job import main
+from btc_monitor.monitor import main
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -1,5 +1,6 @@
 # Python 3.14+; Ubuntu 26.04 Server / headless 환경
 # streamlit 은 서버에서 불필요 — 필요 시 별도 pip install streamlit
+-e ../common
 pandas>=1.1.5,<3
 requests>=2.25.0
 python-dotenv>=0.19.0
